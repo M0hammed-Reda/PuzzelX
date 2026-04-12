@@ -31,13 +31,11 @@ class PuzzleSolver {
     }
 
     Queue<PuzzleState> queue = Queue();
-    Set<List<int>> visited = {};
+    Set<String> visited = {};
     queue.add(initialState);
-    visited.add(initialState.board);
+    visited.add(initialState.board.join(','));
     
     int nodesExplored = 0;
-
-    final listEquality = const ListEquality();
 
     while (queue.isNotEmpty) {
       PuzzleState current = queue.removeFirst();
@@ -53,9 +51,9 @@ class PuzzleSolver {
       }
 
       for (var neighbor in current.generateNeighbors()) {
-        bool isVisited = visited.any((b) => listEquality.equals(b, neighbor.board));
-        if (!isVisited) {
-          visited.add(neighbor.board);
+        String boardHash = neighbor.board.join(',');
+        if (!visited.contains(boardHash)) {
+          visited.add(boardHash);
           queue.add(neighbor);
         }
       }
@@ -87,11 +85,10 @@ class PuzzleSolver {
     final priorityQueue = PriorityQueue<PuzzleState>((a, b) => heuristic(a).compareTo(heuristic(b)));
     priorityQueue.add(initialState);
 
-    final visited = <List<int>>{};
-    visited.add(initialState.board);
+    final visited = <String>{};
+    visited.add(initialState.board.join(','));
     
     int nodesExplored = 0;
-    final listEquality = const ListEquality();
 
     while (priorityQueue.isNotEmpty) {
       PuzzleState current = priorityQueue.removeFirst();
@@ -107,12 +104,9 @@ class PuzzleSolver {
       }
 
       for (var neighbor in current.generateNeighbors()) {
-        bool isVisited = visited.any((b) => listEquality.equals(b, neighbor.board));
-        
-        // In full A* we should check if we found a shorter path to a visited node.
-        // For 8-puzzle with unit cost, depth is standard so basic visited check suffices for performance.
-        if (!isVisited) {
-          visited.add(neighbor.board);
+        String boardHash = neighbor.board.join(',');
+        if (!visited.contains(boardHash)) {
+          visited.add(boardHash);
           priorityQueue.add(neighbor);
         }
       }

@@ -7,6 +7,7 @@ import 'services/firestore_service.dart';
 import 'providers/settings_provider.dart';
 import 'providers/auth_provider.dart';
 import 'services/auth_service.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +15,9 @@ void main() async {
   // Try to initialize Firebase. If it fails (e.g. no config file), fallback to Mock services.
   bool useFirebase = false;
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     useFirebase = true;
   } catch (e) {
     debugPrint('Firebase initialization failed, falling back to mock services: $e');
