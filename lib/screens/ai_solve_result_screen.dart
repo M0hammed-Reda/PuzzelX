@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/game_provider.dart';
@@ -35,9 +36,9 @@ class _AiSolveResultScreenState extends ConsumerState<AiSolveResultScreen> {
 
     SolverResult? result;
     if (_selectedAlgorithm == 'BFS') {
-      result = PuzzleSolver.solveBFS(board);
+      result = await compute(PuzzleSolver.solveBFS, board);
     } else {
-      result = PuzzleSolver.solveAStar(board);
+      result = await compute(PuzzleSolver.solveAStar, board);
     }
 
     setState(() {
