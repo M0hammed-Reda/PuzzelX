@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/game_provider.dart';
@@ -35,9 +36,9 @@ class _AiSolveResultScreenState extends ConsumerState<AiSolveResultScreen> {
 
     SolverResult? result;
     if (_selectedAlgorithm == 'BFS') {
-      result = PuzzleSolver.solveBFS(board);
+      result = await compute(PuzzleSolver.solveBFS, board);
     } else {
-      result = PuzzleSolver.solveAStar(board);
+      result = await compute(PuzzleSolver.solveAStar, board);
     }
 
     setState(() {
@@ -84,9 +85,9 @@ class _AiSolveResultScreenState extends ConsumerState<AiSolveResultScreen> {
                       Text('Result Found!', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.green)),
                       const SizedBox(height: 16),
                       _ResultRow('Algorithm', _result!.algorithmName),
-                      _ResultRow('Steps', '\${_result!.path.length - 1} moves'),
-                      _ResultRow('Nodes Explored', '\${_result!.nodesExplored}'),
-                      _ResultRow('Computation Time', '\${_result!.executionTime.inMilliseconds} ms'),
+                      _ResultRow('Steps', '${_result!.path.length - 1} moves'),
+                      _ResultRow('Nodes Explored', '${_result!.nodesExplored}'),
+                      _ResultRow('Computation Time', '${_result!.executionTime.inMilliseconds} ms'),
                     ],
                   ),
                 ),

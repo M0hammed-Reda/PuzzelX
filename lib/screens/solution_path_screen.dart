@@ -71,7 +71,7 @@ class _SolutionPathScreenState extends ConsumerState<SolutionPathScreen> {
         child: Column(
           children: [
             const SizedBox(height: 24),
-            Text('Step \$_currentStep / \${widget.result.path.length - 1}', style: theme.textTheme.titleLarge),
+            Text('Step $_currentStep / ${widget.result.path.length - 1}', style: theme.textTheme.titleLarge),
             const SizedBox(height: 32),
             Container(
               padding: const EdgeInsets.all(16),
