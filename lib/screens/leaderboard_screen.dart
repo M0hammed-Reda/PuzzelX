@@ -28,14 +28,14 @@ class LeaderboardScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: theme.primaryColor,
-                    child: Text('\${index + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                   title: Text(game.playerName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Algorithm: \${game.algorithmUsed}'),
+                  subtitle: Text('Algorithm: ${game.algorithmUsed}'),
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('\${game.moves} moves', style: TextStyle(color: theme.colorScheme.secondary, fontWeight: FontWeight.bold)),
+                      Text('${game.moves} moves', style: TextStyle(color: theme.colorScheme.secondary, fontWeight: FontWeight.bold)),
                       Text('${game.timeSeconds}s', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     ],
                   ),
