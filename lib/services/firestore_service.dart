@@ -109,12 +109,16 @@ class RealFirestoreService implements FirestoreService {
 
   @override
   Future<List<GameModel>> getLeaderboard() async {
+    // Avoid composite index requirement by fetching top games and filtering locally
     final snapshot = await _db.collection('games')
-        .where('solved', isEqualTo: true)
         .orderBy('moves')
-        .limit(10)
+        .limit(20)
         .get();
         
-    return snapshot.docs.map((d) => GameModel.fromMap(d.data(), d.id)).toList();
+    return snapshot.docs
+        .map((d) => GameModel.fromMap(d.data(), d.id))
+        .where((g) => g.solved)
+        .take(10)
+        .toList();
   }
 }
