@@ -7,10 +7,12 @@ abstract class FirestoreService {
 
   Future<void> saveUser(UserModel user);
   Future<UserModel?> getUser(String uid);
+  Stream<UserModel?> getUserStream(String uid);
   Future<void> incrementUserStats(String uid, {bool usedAi = false, int moves = -1});
   
   Future<void> saveGame(GameModel game);
   Future<List<GameModel>> getLeaderboard();
+  Stream<List<GameModel>> getLeaderboardStream();
 }
 
 class MockFirestoreService implements FirestoreService {
@@ -21,6 +23,11 @@ class MockFirestoreService implements FirestoreService {
   Future<UserModel?> getUser(String uid) async {
     await Future.delayed(const Duration(milliseconds: 500));
     return _users[uid];
+  }
+
+  @override
+  Stream<UserModel?> getUserStream(String uid) async* {
+    yield await getUser(uid);
   }
 
   @override
@@ -59,6 +66,12 @@ class MockFirestoreService implements FirestoreService {
       ..sort((a, b) => a.moves.compareTo(b.moves));
     return sorted.take(10).toList();
   }
+
+  @override
+  Stream<List<GameModel>> getLeaderboardStream() async* {
+    yield* Stream.periodic(const Duration(seconds: 2), (_) => null)
+        .asyncMap((_) => getLeaderboard());
+  }
 }
 
 class RealFirestoreService implements FirestoreService {
@@ -71,6 +84,16 @@ class RealFirestoreService implements FirestoreService {
       return UserModel.fromMap(doc.data()!, doc.id);
     }
     return null;
+  }
+
+  @override
+  Stream<UserModel?> getUserStream(String uid) {
+    return _db.collection('users').doc(uid).snapshots().map((doc) {
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data()!, doc.id);
+      }
+      return null;
+    });
   }
 
   @override
@@ -120,5 +143,18 @@ class RealFirestoreService implements FirestoreService {
         .where((g) => g.solved)
         .take(10)
         .toList();
+  }
+
+  @override
+  Stream<List<GameModel>> getLeaderboardStream() {
+    return _db.collection('games')
+        .orderBy('moves')
+        .limit(20)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((d) => GameModel.fromMap(d.data(), d.id))
+            .where((g) => g.solved)
+            .take(10)
+            .toList());
   }
 }

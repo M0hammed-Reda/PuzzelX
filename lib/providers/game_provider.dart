@@ -39,6 +39,7 @@ class GameState {
 }
 
 final gameProvider = StateNotifierProvider<GameNotifier, GameState>((ref) {
+  ref.watch(authStateProvider); // Recreate the game state whenever auth state changes
   return GameNotifier(ref);
 });
 

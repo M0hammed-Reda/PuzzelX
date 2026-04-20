@@ -56,22 +56,46 @@ class FirebaseAuthService implements AuthService {
 
   @override
   Stream<UserModel?> get authStateChanges {
-    return _auth.authStateChanges().asyncMap((user) async {
-      if (user == null) return null;
-      var userModel = await _firestore.getUser(user.uid);
-      
-      // Auto-heal: If user exists in Auth but missing in Firestore 
-      // (happens if DB was created after account signup).
-      if (userModel == null) {
-        userModel = UserModel(
-          uid: user.uid, 
-          name: user.displayName ?? 'Player', 
-          email: user.email ?? '',
-        );
-        await _firestore.saveUser(userModel);
-      }
-      return userModel;
-    });
+    StreamController<UserModel?>? controller;
+    StreamSubscription<User?>? authSub;
+    StreamSubscription<UserModel?>? firestoreSub;
+
+    controller = StreamController<UserModel?>.broadcast(
+      onListen: () {
+        authSub = _auth.userChanges().listen((user) {
+          firestoreSub?.cancel();
+          if (user == null) {
+            controller?.add(null);
+            return;
+          }
+
+          final isRecentSignUp = user.metadata?.creationTime != null && 
+              DateTime.now().difference(user.metadata!.creationTime!) < const Duration(seconds: 10);
+
+          firestoreSub = _firestore.getUserStream(user.uid).listen((userModel) async {
+            if (userModel == null) {
+              userModel = UserModel(
+                uid: user.uid, 
+                name: user.displayName != null && user.displayName!.isNotEmpty 
+                    ? user.displayName! 
+                    : 'Player', 
+                email: user.email ?? '',
+              );
+              if (!isRecentSignUp) {
+                await _firestore.saveUser(userModel);
+              }
+            }
+            controller?.add(userModel);
+          });
+        });
+      },
+      onCancel: () {
+        authSub?.cancel();
+        firestoreSub?.cancel();
+      },
+    );
+
+    return controller.stream;
   }
 
   @override
@@ -116,6 +140,10 @@ class FirebaseAuthService implements AuthService {
 
         final user = UserModel(uid: cred.user!.uid, name: name, email: email);
         await _firestore.saveUser(user);
+        
+        // Reload user to trigger a final userChanges event with the correct display name
+        await cred.user!.reload();
+        
         return user;
       }
       return null;
